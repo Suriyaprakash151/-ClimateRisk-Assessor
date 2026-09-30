@@ -20,6 +20,8 @@ const ScenarioSimulator = () => {
   const [precipDeltaPct, setPrecipDeltaPct] = useState(20);
   const [windOffsetPct, setWindOffsetPct] = useState(15);
 
+  const [currentClimate, setCurrentClimate] = useState(null);
+
   useEffect(() => {
     fetchRegions();
   }, []);
@@ -41,9 +43,20 @@ const ScenarioSimulator = () => {
 
   useEffect(() => {
     if (selectedRegionId) {
+      fetchRegionClimate(selectedRegionId);
       runSimulation();
     }
   }, [selectedRegionId, tempOffsetC, precipDeltaPct, windOffsetPct]);
+
+  const fetchRegionClimate = async (regionId) => {
+    try {
+      const res = await API.get(`/climate/${regionId}`);
+      setCurrentClimate(res.data);
+    } catch (err) {
+      // If no stored climate data, set to null
+      setCurrentClimate(null);
+    }
+  };
 
   const runSimulation = async () => {
     if (!selectedRegionId) return;
@@ -62,6 +75,16 @@ const ScenarioSimulator = () => {
       setSimulating(false);
     }
   };
+
+  // Base values from Open-Meteo climate data
+  const baseTemp = currentClimate?.temperature?.max ?? 30;
+  const basePrecip = currentClimate?.precipitation?.maxDaily ?? 15;
+  const baseWind = currentClimate?.wind?.max30d ?? 20;
+
+  // Calculate simulated values
+  const simulatedTemp = Number((baseTemp + Number(tempOffsetC)).toFixed(1));
+  const simulatedPrecip = Number((basePrecip * (1 + Number(precipDeltaPct) / 100)).toFixed(1));
+  const simulatedWind = Number((baseWind * (1 + Number(windOffsetPct) / 100)).toFixed(1));
 
   if (loading) {
     return (
@@ -151,12 +174,29 @@ const ScenarioSimulator = () => {
           <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
             <div className="flex justify-between items-center text-xs">
               <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Thermometer className="w-4 h-4 text-red-500" /> Temperature Change
+                <Thermometer className="w-4 h-4 text-red-500" /> Temperature
               </span>
               <span className="font-mono font-bold text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded border border-red-200 dark:border-red-800">
                 {tempOffsetC > 0 ? `+${tempOffsetC}` : tempOffsetC}°C
               </span>
             </div>
+
+            {/* Baseline, Change & Simulated Details */}
+            <div className="grid grid-cols-3 gap-1.5 py-1.5 bg-slate-50 dark:bg-slate-900 px-2.5 rounded border border-slate-200 dark:border-slate-700 text-[11px] font-mono">
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Current</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{baseTemp}°C</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Change</span>
+                <span className="font-semibold text-red-600">{tempOffsetC > 0 ? `+${tempOffsetC}` : tempOffsetC}°C</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Simulated</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{simulatedTemp}°C</span>
+              </div>
+            </div>
+
             <input
               type="range"
               min="-5"
@@ -177,12 +217,29 @@ const ScenarioSimulator = () => {
           <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
             <div className="flex justify-between items-center text-xs">
               <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <CloudRain className="w-4 h-4 text-amber-500" /> Rainfall Change
+                <CloudRain className="w-4 h-4 text-amber-500" /> Rainfall
               </span>
               <span className="font-mono font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
                 {precipDeltaPct > 0 ? `+${precipDeltaPct}` : precipDeltaPct}%
               </span>
             </div>
+
+            {/* Baseline, Change & Simulated Details */}
+            <div className="grid grid-cols-3 gap-1.5 py-1.5 bg-slate-50 dark:bg-slate-900 px-2.5 rounded border border-slate-200 dark:border-slate-700 text-[11px] font-mono">
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Current</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{basePrecip} mm</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Change</span>
+                <span className="font-semibold text-amber-600">{precipDeltaPct > 0 ? `+${precipDeltaPct}` : precipDeltaPct}%</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Simulated</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{simulatedPrecip} mm</span>
+              </div>
+            </div>
+
             <input
               type="range"
               min="-50"
@@ -203,12 +260,29 @@ const ScenarioSimulator = () => {
           <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
             <div className="flex justify-between items-center text-xs">
               <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Wind className="w-4 h-4 text-indigo-500" /> Wind Speed Change
+                <Wind className="w-4 h-4 text-indigo-500" /> Wind Speed
               </span>
               <span className="font-mono font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
                 {windOffsetPct > 0 ? `+${windOffsetPct}` : windOffsetPct}%
               </span>
             </div>
+
+            {/* Baseline, Change & Simulated Details */}
+            <div className="grid grid-cols-3 gap-1.5 py-1.5 bg-slate-50 dark:bg-slate-900 px-2.5 rounded border border-slate-200 dark:border-slate-700 text-[11px] font-mono">
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Current</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{baseWind} km/h</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Change</span>
+                <span className="font-semibold text-indigo-600">{windOffsetPct > 0 ? `+${windOffsetPct}` : windOffsetPct}%</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-sans">Simulated</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{simulatedWind} km/h</span>
+              </div>
+            </div>
+
             <input
               type="range"
               min="-30"
