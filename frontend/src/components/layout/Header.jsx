@@ -22,16 +22,19 @@ const Header = ({ title = 'Climate Risk Overview' }) => {
   }, []);
 
   return (
-    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-5 flex items-center justify-between sticky top-0 z-20 font-sans">
-      <div className="flex items-center gap-3">
-        <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">{title}</h2>
-        <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-          <Database className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-          Data Source: Open-Meteo
-        </span>
+    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between sticky top-0 z-20 font-sans">
+      <div>
+        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">{title}</h2>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400">Monitor regional climate hazards and resilience indicators.</p>
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Data Source Badge */}
+        <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+          <Database className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+          Data Source: Open-Meteo
+        </span>
+
         {/* Dark Mode Toggle */}
         <button
           onClick={toggleTheme}
@@ -41,7 +44,7 @@ const Header = ({ title = 'Climate Risk Overview' }) => {
           {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
         </button>
 
-        {/* Alerts Badge */}
+        {/* Alerts Notification Icon */}
         <a
           href="/alerts"
           className="relative p-1.5 rounded text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
