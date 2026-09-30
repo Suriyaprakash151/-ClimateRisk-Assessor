@@ -17,6 +17,7 @@ const assessmentRoutes = require('./routes/assessmentRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const locationRoutes = require('./routes/locationRoutes');
 
 // Services for Cron Refresh
 const Region = require('./models/Region');
@@ -63,6 +64,7 @@ app.use('/api/assessments', assessmentRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/locations', locationRoutes);
 
 // Cloud Health Check Route
 app.get('/api/health', (req, res) => {
