@@ -27,7 +27,7 @@ const { fetchOpenMeteoData } = require('./services/openMeteoService');
 const app = express();
 
 // Connect Database (Local MongoDB or MongoDB Atlas via MONGO_URI)
-connectDB();
+
 
 // Security & Logging Middlewares
 app.use(helmet({
@@ -109,6 +109,20 @@ cron.schedule('0 */6 * * *', async () => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`[ClimateRisk Server]: Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(
+        `[ClimateRisk Server]: Running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+      );
+    });
+  } catch (error) {
+    console.error('[Server Startup Error]:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
